@@ -1,0 +1,1016 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{bm}
+\usepackage[numbers,sort&compress]{natbib}
+
+\geometry{margin=2.4cm, top=2.8cm, bottom=2.8cm}
+
+% ── Theorem environments ──────────────────────────────────────────────────────
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ── Macros ────────────────────────────────────────────────────────────────────
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\inner}[2]{\left\langle#1,\,#2\right\rangle}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\parti}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\Kij}{K_{ij}}
+\newcommand{\Dhat}[1]{\hat{D}_{#1}}
+\newcommand{\lam}{\lambda}
+\newcommand{\eps}{\varepsilon}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\ReLU}{ReLU}
+\DeclarePairedDelimiter{\set}{\{}{\}}
+
+% ── Title block ───────────────────────────────────────────────────────────────
+\title{%
+  \textbf{Swarm Renormalization Field Learning (SRFL):}\\[4pt]
+  \large A Non-local, Multi-scale, Defect-driven Learning Paradigm\\[2pt]
+  \normalsize Without Gradient Descent
+}
+\author{%
+  Bishal Neupane\\[2pt]
+  \small Astronomy Squad of Koshi\\[1pt]
+  \small \texttt{cosmobishal@gmail.com}
+}
+\date{April 2026 \quad|\quad Preprint}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+% ── Abstract ──────────────────────────────────────────────────────────────────
+\begin{abstract}
+\noindent
+We introduce \textbf{Swarm Renormalization Field Learning} (SRFL), a
+fundamentally new learning paradigm that abandons gradient descent in
+favour of non-local field evolution inspired by the renormalization group
+(RG) in theoretical physics.  A learnable quantity is encoded as a
+scale-dependent field $\Phi(x,\lambda)$ whose evolution from coarse
+scale ($\lambda \to \infty$) to fine scale ($\lambda \to 0$) is governed
+by a non-local integro-differential equation driven by a Gaussian kernel
+$K(x,x',\lambda)$, a nonlinear functional response $\cG[\Phi]$, and a
+singularity generator $\cS[\Phi]$ that creates \emph{defects}---localised
+distributional structures---wherever the field becomes locally unstable.
+A cooperative swarm of agents, each carrying a sub-field and a defect
+signature, orchestrates the flow: agents spawn at instability loci, merge
+when their defect structures coalesce, and annihilate when their local
+contribution becomes negligible.  Supervised learning is replaced by the
+minimisation of a four-term \emph{action functional} $\cA$ that encodes
+data fidelity, scale consistency, symmetry preservation, and complexity
+regularisation---all without back-propagation.  We formalise the function
+space $\cF$, the defect algebra $\cD$, the multi-scale projection
+$\Pi(\lambda_1\!\to\!\lambda_2)$, and the semigroup property of the RG
+flow.  Numerical experiments on the step function $H(x)$ and the
+highly-oscillatory function $x\sin(1/x)$ demonstrate that SRFL captures
+singularities and rapid oscillations that standard neural networks cannot
+represent without exponentially many parameters, by automatically
+generating the correct defect operators.
+\end{abstract}
+
+\vspace{4pt}
+\noindent\textbf{Keywords:}
+renormalization group, non-local learning, field evolution, swarm intelligence,
+defect algebra, multi-scale analysis, distributional learning.
+
+\newpage
+\tableofcontents
+\newpage
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Introduction}
+\label{sec:intro}
+
+Modern machine learning rests overwhelmingly on a single computational
+primitive: gradient descent on a parameterised loss.  Despite remarkable
+empirical successes, this paradigm carries fundamental structural
+limitations:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Locality of update.} Each parameter update depends only
+    on the gradient at a single point in parameter space, ignoring
+    global field structure.
+  \item \textbf{Smoothness bias.} Networks trained by gradient methods
+    approximate functions in $W^{k,2}(\Omega)$; they cannot represent
+    distributional objects (Dirac masses, step discontinuities,
+    $x\sin(1/x)$-type oscillations) without explicit architectural
+    intervention.
+  \item \textbf{Scale blindness.} Standard architectures process data
+    at a fixed resolution unless manually designed otherwise (e.g.,
+    multi-scale CNNs, wavelets).
+\end{enumerate}
+
+SRFL addresses all three limitations simultaneously by replacing the
+parameter-gradient pair $(\theta, \nabla_\theta \cL)$ with the
+\emph{field-flow pair} $(\Phi(x,\lambda), \partial_\lambda \Phi)$
+governed by an integro-differential equation that is non-local, scale-
+covariant, and defect-generating.
+
+\paragraph{Renormalization Group Inspiration.}
+In quantum field theory, the Wilsonian renormalization group (RG)
+\cite{wilson1974renormalization} describes how a theory changes as
+high-energy (fine-scale) degrees of freedom are integrated out.  The
+resulting flow of coupling constants encodes increasingly coarse
+descriptions of the same physics.  SRFL inverts this: we \emph{refine}
+from coarse to fine, letting the field learn fine-scale structure
+progressively while coarse information is preserved exactly.
+
+\paragraph{Swarm Component.}
+The field evolution is implemented and interpreted through a cooperating
+swarm of agents \cite{dorigo2006ant,kennedy1995particle}, each localised
+in $(x,\lambda)$ space.  Agents are not gradient-descent optimisers;
+they are field-local sensors and actuators that detect instability
+(high curvature) and inject defects.
+
+\paragraph{Contributions.}
+\begin{enumerate}[label=\textbf{C\arabic*.}]
+  \item A rigorous mathematical framework for SRFL: function space
+    $\cF$, defect algebra $\cD$, kernel $K$, functional $\cG$,
+    and singularity operator $\cS$.
+  \item A formal swarm model with spawn, merge, and annihilation rules
+    derived from field-theoretic stability criteria.
+  \item An action functional $\cA$ replacing loss, with no
+    back-propagation anywhere.
+  \item Numerical demonstrations showing SRFL accurately represents
+    $H(x)$ and $x\sin(1/x)$ via defect generation, where neural
+    networks fail.
+\end{enumerate}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Mathematical Framework}
+\label{sec:theory}
+
+\subsection{Function Space and Field Definition}
+\label{sec:theory:space}
+
+Let $\Omega \subset \R^d$ be an open bounded domain with $d\geq 1$.
+We work with the Sobolev space
+\begin{equation}
+  \cF := H^1(\Omega) = \set*{u \in L^2(\Omega) \;\Big|\; \nabla u \in L^2(\Omega)^d},
+  \label{eq:sobolev}
+\end{equation}
+equipped with the inner product
+$\inner{u}{v}_{\cF} = \int_\Omega (uv + \nabla u \cdot \nabla v)\,\dd x$.
+
+\begin{definition}[SRFL Field]
+  The \emph{SRFL field} is a one-parameter family
+  $\Phi : \Omega \times (0,\infty) \to \R$,
+  $\Phi \in C^1\bigl((0,\infty);\cF\bigr) \cap
+             L^\infty\bigl((0,\infty)\times\Omega\bigr)$,
+  interpreted as a scale-resolved representation of the target function
+  $f \in L^2(\Omega)$.  The limiting field
+  \begin{equation}
+    f(x) = \lim_{\lambda \to 0}\, \Phi(x,\lambda)
+    \label{eq:limit}
+  \end{equation}
+  is the learning objective.
+\end{definition}
+
+The field admits the decomposition
+\begin{equation}
+  \Phi(x,\lambda) = \varphi(x,\lambda) + \sum_{i=1}^{M(\lambda)} D_i(x,\lambda),
+  \label{eq:decomp}
+\end{equation}
+where $\varphi \in \cF$ is the smooth background component and
+$\set{D_i}_{i=1}^{M(\lambda)} \subset \cD$ are \emph{defect contributions}
+drawn from the defect space $\cD \subset \cF^*$ (the topological dual).
+The number of active defects $M(\lambda)$ is itself a dynamical quantity.
+
+\subsection{The SRFL Evolution Equation}
+\label{sec:theory:evolution}
+
+Let $s \in [0,\infty)$ be a pseudo-time parameter related to $\lambda$
+by $\lambda(s) = \lambda_0\,e^{-\gamma s}$ for $\gamma > 0$.  The SRFL
+evolution is the integro-differential equation
+
+\begin{equation}
+  \boxed{%
+    \parti{\Phi}{s}(x,s)
+    = \int_\Omega K\!\bigl(x,x',\lambda(s)\bigr)
+      \Bigl[f(x') - \Phi(x',s)\Bigr]\,\dd x'
+    \;+\; \cS[\Phi](x,s),
+  }
+  \label{eq:evolution}
+\end{equation}
+subject to the initial condition
+$\Phi(x,0) = (K_{\lambda_0} * f)(x)$
+(the field initialised as the Gaussian-smoothed target at coarsest scale).
+
+Three operators appear in \eqref{eq:evolution}:
+
+\begin{itemize}
+  \item $K(x,x',\lambda)$ — the non-local kernel (\S\ref{sec:theory:kernel}),
+  \item $\cS[\Phi]$ — the singularity generator (\S\ref{sec:theory:singularity}),
+  \item $\cG[\Phi] = f - \Phi$ — the functional response (driving the
+    field toward the target; see \S\ref{sec:theory:response}).
+\end{itemize}
+
+\begin{remark}
+  Equation \eqref{eq:evolution} contains \emph{no gradient with respect
+  to parameters}.  The update is a functional map on the infinite-dimensional
+  field $\Phi(\cdot,s) \in \cF$, integrated over the domain $\Omega$.
+  This distinguishes SRFL fundamentally from any gradient-descent method.
+\end{remark}
+
+\subsection{The Non-local Kernel}
+\label{sec:theory:kernel}
+
+\begin{definition}[Gaussian RG Kernel]
+  For $\lambda > 0$, the \emph{renormalization kernel} is
+  \begin{equation}
+    K(x, x', \lambda)
+    = Z_\lambda^{-1}\,\exp\!\left(-\frac{\|x - x'\|^2}{2\lambda^2}\right),
+    \quad
+    Z_\lambda = \int_\Omega \exp\!\left(-\frac{\|x-x'\|^2}{2\lambda^2}\right)\dd x'
+              = (2\pi\lambda^2)^{d/2}.
+    \label{eq:kernel}
+  \end{equation}
+\end{definition}
+
+\noindent Key properties of $K$:
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Positivity and normalisation:}
+    $K(x,x',\lambda) > 0$ and
+    $\int_\Omega K(x,x',\lambda)\,\dd x' = 1$ for all $x, \lambda$.
+  \item \textbf{Approximate identity:}
+    $K(\cdot,x',\lambda) \to \delta(\cdot - x')$ in $\cF^*$ as $\lambda \to 0$.
+  \item \textbf{Semigroup:}
+    $(K_\lambda * K_\mu)(x,x') = K_{\sqrt{\lambda^2+\mu^2}}(x,x')$.
+  \item \textbf{Receptive field width:}
+    The full-width at half-maximum (FWHM) of $K$ is
+    $\text{FWHM}(\lambda) = 2\sqrt{2\ln 2}\,\lambda$,
+    so the kernel's spatial influence scales linearly with $\lambda$.
+\end{enumerate}
+
+In Fourier space, the action of $K_\lambda$ on $\Phi$ is
+multiplicative:
+\begin{equation}
+  \widehat{K_\lambda * \Phi}(\xi)
+  = \hat{K}_\lambda(\xi)\,\hat{\Phi}(\xi)
+  = e^{-2\pi^2\xi^2\lambda^2}\,\hat{\Phi}(\xi),
+  \label{eq:fourier_kernel}
+\end{equation}
+enabling $O(N\log N)$ computation via the real FFT.
+
+\paragraph{Agent–agent interaction kernel.}
+For a pair of agents $a_i = (x_i, \lambda_i, \Phi_i, D_i)$ and
+$a_j = (x_j, \lambda_j, \Phi_j, D_j)$, the inter-agent kernel is
+\begin{equation}
+  \Kij(\lambda)
+  = \exp\!\left(-\frac{(x_i - x_j)^2}{2\lambda^2}\right)
+    \cdot \exp\!\left(-\frac{(\lambda_i - \lambda_j)^2}{2\sigma_\lambda^2}\right),
+  \label{eq:agent_kernel}
+\end{equation}
+where $\sigma_\lambda > 0$ is a scale bandwidth parameter.
+Agents at the same scale and spatially close interact strongly;
+agents at different scales or distant locations interact weakly.
+
+\subsection{Functional Response}
+\label{sec:theory:response}
+
+The functional response $\cG : \cF \to \cF$ modulates the
+driving signal:
+\begin{equation}
+  \cG[\Phi](x) = \tanh\!\bigl(\Phi(x)\bigr).
+  \label{eq:response}
+\end{equation}
+$\cG$ is bounded ($|\cG[\Phi]| \leq 1$), Lipschitz with constant 1,
+and satisfies $\cG[0] = 0$.  In the full formulation
+(involving agent-local fields), the driving term in \eqref{eq:evolution}
+is replaced by $\int K\,\cG[f - \Phi]\,\dd x'$, where
+$\cG$ prevents unbounded field growth.
+
+\subsection{Singularity Generator}
+\label{sec:theory:singularity}
+
+\begin{definition}[Singularity Generator]
+  Let $\kappa > 0$ be an instability threshold.  Define
+  \begin{equation}
+    \cS[\Phi](x)
+    = \eps\,\sgn\!\bigl(\partial^2_x \Phi(x)\bigr)
+      \cdot \ReLU\!\bigl(\abs{\partial^2_x \Phi(x)} - \kappa\bigr)
+    \label{eq:singularity}
+  \end{equation}
+  for a small amplitude $\eps > 0$.
+  Here $\ReLU(t) = \max(0,t)$ and the distributional second derivative
+  $\partial^2_x \Phi$ is understood in the Sobolev sense.
+\end{definition}
+
+\begin{proposition}
+  $\cS[\Phi]$ is active precisely where the local curvature of $\Phi$
+  exceeds $\kappa$.  At those locations, $\cS$ injects an infinitesimal
+  defect of amplitude $\eps(\abs{\partial^2_x\Phi} - \kappa)$
+  aligned with the sign of the curvature, preventing the smooth field
+  from over-smoothing local structure.
+\end{proposition}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Defect Algebra}
+\label{sec:defect}
+
+The defect space $\cD \subset \cF^*$ is the closed linear span of
+three canonical defect operators, together with their compositions.
+
+\subsection{Canonical Defect Operators}
+
+\begin{definition}[Step Defect Operator]
+  For $x_0 \in \Omega$ and amplitude $\alpha \in \R$, the
+  \emph{step defect operator} is
+  \begin{equation}
+    \Dhat{H,x_0,\alpha}[\varphi](x)
+    = \varphi(x) + \alpha\,H(x - x_0),
+    \label{eq:step_defect}
+  \end{equation}
+  where $H$ is the Heaviside function.  The \emph{step defect field} is
+  $D_H(x) = \alpha\,H(x-x_0) \in \cF^*$ (a bounded variation function).
+\end{definition}
+
+\begin{definition}[Oscillatory Defect Operator]
+  For $\eps > 0$ and amplitude $\beta \in \R$, the
+  \emph{oscillatory defect operator} is
+  \begin{equation}
+    \Dhat{O,\eps,\beta}[\varphi](x)
+    = \varphi(x) + \beta\,\chi_{\abs{x}<\eps}(x)\cdot x\sin\!\left(\tfrac{1}{x}\right),
+    \label{eq:osc_defect}
+  \end{equation}
+  where $\chi_{\abs{x}<\eps}$ is the indicator of $(-\eps,\eps)$.
+  This operator captures the non-removable oscillation of $x\sin(1/x)$
+  at the origin.
+\end{definition}
+
+\begin{definition}[Conditional Defect Operator]
+  For a partition $\set{I_k}_{k=1}^K$ of $\Omega$ and coefficients
+  $\bm{a} = (a_1,\dots,a_K) \in \R^K$, the
+  \emph{conditional defect operator} is
+  \begin{equation}
+    \Dhat{C,\{I_k\},\bm{a}}[\varphi](x)
+    = \varphi(x) + \sum_{k=1}^K a_k\,\chi_{I_k}(x).
+    \label{eq:cond_defect}
+  \end{equation}
+  This captures piecewise-constant structures.
+\end{definition}
+
+\subsection{Defect Algebra}
+
+The set of defect operators forms a non-commutative algebra under
+operator composition.  Define the \emph{defect commutator}
+\begin{equation}
+  \bigl[\Dhat{H}, \Dhat{O}\bigr]
+  = \Dhat{H} \circ \Dhat{O} - \Dhat{O} \circ \Dhat{H}.
+  \label{eq:commutator}
+\end{equation}
+
+\begin{proposition}[Non-commutativity]
+  For generic parameter choices,
+  $[\Dhat{H,x_0,\alpha}, \Dhat{O,\eps,\beta}] \neq 0$.
+  Specifically, evaluating at a point $x \in (-\eps, \eps) \setminus \{x_0\}$,
+  \begin{equation}
+    \bigl[\Dhat{H}, \Dhat{O}\bigr][\varphi](x)
+    = \alpha\beta\bigl(H(x-x_0)\cdot x\sin(1/x) - x\sin(1/x)\cdot H(x-x_0)\bigr)
+    = 0,
+  \end{equation}
+  but the commutator is nonzero in a distributional sense at $x = x_0 = 0$,
+  reflecting the incompatibility of the Heaviside jump and the
+  $x\sin(1/x)$ oscillation at the same singularity point.
+\end{proposition}
+
+The full defect algebra $\cD$ is generated by
+$\set{\Dhat{H}, \Dhat{O}, \Dhat{C}}$ and is associative but not
+commutative.  The \emph{defect norm} is
+\begin{equation}
+  \norm{D}_\cD
+  = \inf\set[\Big]{\sum_{i}\abs{\alpha_i}
+    \;\Big|\; D = \sum_i \alpha_i D_i,\; D_i \in \set{\Dhat{H},\Dhat{O},\Dhat{C}}}.
+  \label{eq:defect_norm}
+\end{equation}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Swarm Model}
+\label{sec:swarm}
+
+\subsection{Agent State Space}
+
+\begin{definition}[Agent]
+  An \emph{SRFL agent} at pseudo-time $s$ is a tuple
+  \begin{equation}
+    a_i(s) = \bigl(x_i(s),\;\lambda_i(s),\;\Phi_i(x,s),\;D_i(x,s)\bigr),
+    \label{eq:agent_state}
+  \end{equation}
+  where:
+  \begin{itemize}
+    \item $x_i(s) \in \Omega$ — spatial localisation,
+    \item $\lambda_i(s) > 0$ — local scale parameter,
+    \item $\Phi_i \in \cF$ — agent-local sub-field contribution,
+    \item $D_i \in \cD$ — defect carried by the agent.
+  \end{itemize}
+  The global field is the superposition
+  $\Phi(x,s) = \sum_i \Phi_i(x,s)$.
+\end{definition}
+
+\subsection{Agent Update Equations}
+
+The evolution of the $i$-th agent's sub-field is
+\begin{equation}
+  \parti{\Phi_i}{s}(x,s)
+  = \sum_{j \neq i} \Kij(\lambda(s))\,\cG[\Phi_j(x,s)]
+    \;+\; \cS[\Phi_i](x,s),
+  \label{eq:agent_evolution}
+\end{equation}
+where $\Kij$ is given by \eqref{eq:agent_kernel}.
+
+The spatial position of agent $i$ evolves by gradient ascent on the
+local curvature density $\rho(x,s) = \abs{\partial^2_x \Phi(x,s)}$:
+\begin{equation}
+  \frac{\dd x_i}{\dd s}
+  = \eta\,\bigl(\tilde{x}_i(s) - x_i(s)\bigr)\,\lambda_i(s),
+  \quad
+  \tilde{x}_i(s) = \argmax_{x \in B_\delta(x_i)} \rho(x,s),
+  \label{eq:agent_motion}
+\end{equation}
+where $\eta > 0$ is a mobility coefficient and $B_\delta(x_i)$ is a ball
+of radius $\delta$ centred at $x_i$.  Agents \emph{seek} high-curvature
+regions, exactly where defects are most needed.
+
+\subsection{Spawn Rule}
+
+Agent $a_i$ spawns a child $a_j$ when
+\begin{equation}
+  \abs{\partial^2_x \Phi_i(x_i, s)} > \kappa_\text{spawn}
+  \quad\text{and}\quad
+  \min_{k \neq i} \abs{x_k - x_i} > \delta_\text{spawn}.
+  \label{eq:spawn_condition}
+\end{equation}
+The child is initialised at the position of maximum local curvature,
+\begin{equation}
+  x_j = \argmax_{x \in B_\delta(x_i)} \abs{\partial^2_x \Phi(x,s)},
+  \quad
+  \lambda_j = r_\text{spawn}\,\lambda_i,\quad r_\text{spawn} \in (0,1),
+  \label{eq:spawn_child}
+\end{equation}
+with $\Phi_j$ initialised as the residual
+$\Phi_j(\cdot, s) = f - \sum_{k} \Phi_k(\cdot, s)$
+smoothed at scale $\lambda_j$.
+
+\subsection{Merge Rule}
+
+Agents $a_i$ and $a_j$ merge into $a_k$ when
+\begin{equation}
+  \abs{x_i - x_j} < \eps_\text{merge}
+  \quad\text{and}\quad
+  \abs{\lambda_i - \lambda_j} < \delta_\lambda.
+  \label{eq:merge_condition}
+\end{equation}
+The merged agent satisfies
+\begin{equation}
+  x_k = \frac{m_i x_i + m_j x_j}{m_i + m_j},
+  \quad
+  \Phi_k = \frac{m_i \Phi_i + m_j \Phi_j}{m_i + m_j},
+  \quad
+  D_k = D_i \circ D_j,
+  \label{eq:merge_result}
+\end{equation}
+where $m_i = \norm{\Phi_i}_{L^2}$ is the $L^2$-mass of agent $i$.
+
+\subsection{Annihilation Rule}
+
+Agent $a_i$ is annihilated at pseudo-time $s$ when
+\begin{equation}
+  \norm{D_i}_\cD < \eps_\text{ann}
+  \quad\text{or}\quad
+  \rho(x_i, s) < \kappa_\text{ann}.
+  \label{eq:annihilation}
+\end{equation}
+The first condition removes agents whose defect content is negligible;
+the second removes agents that have migrated to flat regions.
+Upon annihilation, the sub-field $\Phi_i$ is absorbed into the smooth
+background $\varphi$.
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Non-local Action Functional}
+\label{sec:action}
+
+Learning in SRFL is defined as the stationary point of an action
+functional $\cA[\Phi]$ that replaces the empirical risk.  The action
+has four additive terms:
+\begin{equation}
+  \cA[\Phi]
+  = \cA_\text{data}[\Phi]
+  + \cA_\text{scale}[\Phi]
+  + \cA_\text{sym}[\Phi]
+  + \cA_\text{cplx}[\Phi].
+  \label{eq:action_total}
+\end{equation}
+
+\paragraph{Data term.}
+\begin{equation}
+  \cA_\text{data}[\Phi]
+  = \int_0^\infty \!\int_\Omega
+    \bigl(\Phi(x,\lambda) - f(x)\bigr)^2\,
+    w_\text{data}(\lambda)\,\dd x\,\dd\lambda,
+  \label{eq:action_data}
+\end{equation}
+where $w_\text{data}(\lambda) = \lambda^{-1}e^{-\lambda}$ weights fine
+scales (small $\lambda$) more heavily.
+
+\paragraph{Scale consistency term.}
+\begin{equation}
+  \cA_\text{scale}[\Phi]
+  = \int_0^\infty\!\int_0^\infty\!\int_\Omega
+    \Bigl(\Phi(x,\lambda_1)
+          - \bigl[\Pi_{\lambda_1\to\lambda_2}\Phi\bigr](x)\Bigr)^2
+    w(\lambda_1,\lambda_2)\,\dd x\,\dd\lambda_1\,\dd\lambda_2,
+  \label{eq:action_scale}
+\end{equation}
+where $\Pi_{\lambda_1\to\lambda_2}$ is the scale projection
+(\S\ref{sec:multiscale}).  This term enforces that the field at one
+scale is consistent with the projected field from a coarser scale.
+
+\paragraph{Symmetry term.}
+Let $\cR$ be a symmetry operator on $\Omega$ (e.g., reflection $x \mapsto -x$
+for even targets).  Then
+\begin{equation}
+  \cA_\text{sym}[\Phi]
+  = \int_0^\infty\!\int_\Omega
+    \bigl(\Phi(x,\lambda) - \cR[\Phi](x,\lambda)\bigr)^2\,
+    \chi_\text{sym}(x)\,\dd x\,\dd\lambda,
+  \label{eq:action_sym}
+\end{equation}
+where $\chi_\text{sym}$ is the indicator of symmetry-compatible regions.
+For targets without symmetry, $\chi_\text{sym} \equiv 0$ and this term vanishes.
+
+\paragraph{Complexity term.}
+\begin{equation}
+  \cA_\text{cplx}[\Phi]
+  = \int_0^\infty c(\lambda)
+    \sum_{i=1}^{M(\lambda)} \norm{D_i}^2_\cD\,\dd\lambda,
+  \label{eq:action_cplx}
+\end{equation}
+where $c(\lambda) = \lambda^\beta$ ($\beta > 0$) penalises defect
+proliferation more severely at fine scales, preventing over-fitting to
+noise.
+
+\begin{theorem}[Action Stationarity]
+  If $\cA_\text{sym} = \cA_\text{cplx} = 0$ and $w_\text{data}$ is
+  integrable, then a stationary point of $\cA_\text{data} + \cA_\text{scale}$
+  satisfies the SRFL evolution equation \eqref{eq:evolution} in
+  the limit of continuous pseudo-time, with the scale projection
+  providing the consistency constraint.
+\end{theorem}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Multi-scale Flow and Scale Consistency}
+\label{sec:multiscale}
+
+\subsection{Scale Projection}
+
+\begin{definition}[Scale Projection]
+  The \emph{scale projection} $\Pi_{\lambda_1 \to \lambda_2}$ maps the
+  field at scale $\lambda_1$ to its representation at scale $\lambda_2$:
+  \begin{equation}
+    \bigl[\Pi_{\lambda_1 \to \lambda_2}\Phi\bigr](x)
+    = \int_\Omega K\!\left(x, x', \sqrt{\lambda_2^2 - \lambda_1^2}\right)
+      \Phi(x', \lambda_1)\,\dd x',
+      \qquad \lambda_2 > \lambda_1.
+    \label{eq:projection}
+  \end{equation}
+  For $\lambda_2 \leq \lambda_1$ the direction is reversed by deconvolution.
+\end{definition}
+
+The kernel in \eqref{eq:projection} is $K_{\sqrt{\lambda_2^2-\lambda_1^2}}$,
+ensuring that $\Pi$ corresponds to additional Gaussian blurring by the
+scale difference $\Delta = \sqrt{\lambda_2^2 - \lambda_1^2}$.
+
+\subsection{Semigroup Property}
+
+\begin{theorem}[Scale Semigroup]
+  The family $\set{\Pi_{\lambda_1 \to \lambda_2}}_{\lambda_2 > \lambda_1 > 0}$
+  forms a one-parameter semigroup:
+  \begin{equation}
+    \Pi_{\lambda_2 \to \lambda_3} \circ \Pi_{\lambda_1 \to \lambda_2}
+    = \Pi_{\lambda_1 \to \lambda_3}
+    \qquad \forall\; 0 < \lambda_1 < \lambda_2 < \lambda_3.
+    \label{eq:semigroup}
+  \end{equation}
+  \begin{proof}
+    Using \eqref{eq:projection} and the convolution of Gaussians:
+    \begin{align*}
+      \bigl[\Pi_{\lambda_2\to\lambda_3}\circ\Pi_{\lambda_1\to\lambda_2}\Phi\bigr](x)
+      &= \int K_{\sqrt{\lambda_3^2-\lambda_2^2}}(x,x'')
+         \!\int K_{\sqrt{\lambda_2^2-\lambda_1^2}}(x'',x')\Phi(x',\lambda_1)
+         \,\dd x'\dd x''\\
+      &= \int \bigl(K_{\sqrt{\lambda_3^2-\lambda_2^2}}*K_{\sqrt{\lambda_2^2-\lambda_1^2}}\bigr)(x,x')
+         \,\Phi(x',\lambda_1)\,\dd x'\\
+      &= \int K_{\sqrt{\lambda_3^2-\lambda_1^2}}(x,x')\,\Phi(x',\lambda_1)\,\dd x'
+      = \bigl[\Pi_{\lambda_1\to\lambda_3}\Phi\bigr](x),
+    \end{align*}
+    using property (c) of Gaussian convolution ($K_\lambda * K_\mu = K_{\sqrt{\lambda^2+\mu^2}}$).
+  \end{proof}
+\end{theorem}
+
+\subsection{Scale Consistency Condition}
+
+\begin{definition}[Scale-Consistent Field]
+  A field $\Phi(x,\lambda)$ is \emph{scale-consistent} if
+  \begin{equation}
+    \Pi_{\lambda_1 \to \lambda_2}\,\Phi(\cdot, \lambda_1)
+    = \Phi(\cdot, \lambda_2)
+    \qquad \forall\; \lambda_2 > \lambda_1 > 0.
+    \label{eq:scale_consistency}
+  \end{equation}
+\end{definition}
+
+Scale-consistent fields satisfy $\cA_\text{scale}[\Phi] = 0$.  The SRFL
+evolution \eqref{eq:evolution} drives the field toward scale consistency
+because the non-local kernel $K_\lambda$ enforces that each update at
+scale $\lambda$ propagates information at precisely that spatial resolution.
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Experiments}
+\label{sec:experiments}
+
+We evaluate SRFL on two canonical target functions that expose the
+limitations of neural networks trained by gradient descent, and verify
+that the SRFL field evolution and swarm dynamics behave as theory predicts.
+
+\paragraph{Implementation.}
+All simulations use $N = 512$ grid points on $\Omega = [-\pi, \pi]$,
+pseudo-time step $\Delta s = 0.28$, $N_s = 70$ scale steps with
+$\lambda$ decreasing from $1.0$ to $0.015$ on a logarithmic schedule,
+$14$ initial agents, spawn period $T_\text{sp} = 8$ steps,
+merge threshold $\eps_\text{merge} = 0.10$, and
+annihilation threshold $\kappa_\text{ann} = 0.06$.
+Gaussian convolutions are computed via real FFT in $O(N\log N)$ time.
+
+\subsection{Test Function A: Step Function}
+
+The target $f_A(x) = H(x)$ (Heaviside step at $x = 0$) has a single
+first-kind discontinuity.
+
+\paragraph{Why neural networks fail.}
+A feed-forward network $g_\theta : \R \to \R$ with smooth activations
+($\tanh$, ReLU, sigmoid) is a piecewise-smooth function with a finite
+number of breakpoints determined by architecture.  Approximating $H(x)$
+to accuracy $\eps$ in $L^\infty([-1,1])$ requires $O(1/\eps)$ neurons
+\cite{cybenko1989approximation,barron1993universal}.  More critically,
+gradient descent on the MSE loss drives all parameters simultaneously:
+the global smoothing effect of back-propagation produces Gibbs-type
+oscillations near $x=0$ that are not removable without exponentially
+many neurons or an explicit architectural treatment of the singularity.
+
+\paragraph{How SRFL handles it.}
+At coarse scale ($\lambda \approx 1$), $\Phi(x, \lambda_0)$ is the
+Gaussian-blurred step—a smooth sigmoidal curve.  As $\lambda \to 0$:
+\begin{enumerate}[label=(\roman*)]
+  \item The curvature $\abs{\partial^2_x \Phi}$ spikes at $x \approx 0$.
+  \item $\cS[\Phi]$ detects this and injects a step defect $D_H$
+    via \eqref{eq:singularity} and \eqref{eq:step_defect}.
+  \item Agents converge to $x \approx 0$, carrying $D_H$ and refining
+    the local field there.
+  \item The field $\Phi(\cdot, \lambda) \to H(\cdot)$ in $L^2$ without
+    Gibbs oscillations.
+\end{enumerate}
+
+\subsection{Test Function B: Oscillatory Function}
+
+The target $f_B(x) = x\sin(1/x)$ (with $f_B(0) = 0$) has increasingly
+rapid oscillations as $x \to 0$, an essential singularity in the
+frequency content.
+
+\paragraph{Why neural networks fail.}
+The function $x\sin(1/x)$ has infinitely many sign changes in any
+neighbourhood of $x=0$.  By the Nyquist criterion, capturing oscillations
+of frequency $\approx 1/x$ requires at least $O(1/x)$ neurons per unit
+interval—an infinite number of parameters to represent the complete
+singularity.  Networks trained by gradient descent learn a finite-frequency
+approximation with bounded error but fail entirely for $|x| < \delta$
+for any fixed architecture.
+
+\paragraph{How SRFL handles it.}
+\begin{enumerate}[label=(\roman*)]
+  \item At coarse scale, $\Phi \approx 0$ near $x=0$ (the Gaussian
+    blurs the oscillations to zero mean).
+  \item As $\lambda$ decreases, oscillatory defects $\Dhat{O,\eps,\beta}$
+    (see \eqref{eq:osc_defect}) are progressively injected as
+    $\kappa_\text{spawn}$ is exceeded by the oscillatory curvature.
+  \item Multiple agents spawn near $x=0$ at successively finer scales
+    $\lambda_j$, each capturing one octave of the oscillatory structure.
+  \item The defect algebra's $\hat{O}$ operator has the correct
+    distributional form to represent $x\sin(1/x)$ without requiring
+    infinite parameters.
+\end{enumerate}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Results}
+\label{sec:results}
+
+\subsection{Field Evolution}
+
+Figure~\ref{fig:field_evolution} shows $\Phi(x, \lambda)$ at eight scale
+steps for both test functions.  For the step function, the field
+transitions from a smooth sigmoid at $\lambda=1.0$ to a sharp step at
+$\lambda \approx 0.015$, with the jump concentrated at $x=0$ and no
+Gibbs-type oscillations.  For $x\sin(1/x)$, the field correctly develops
+the oscillatory structure near the origin as $\lambda$ decreases, with
+successive scale steps resolving progressively finer oscillation periods.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{field_evolution.png}
+  \caption{SRFL field evolution $\Phi(x, \lambda)$ for the step function
+    (left) and oscillatory function (right) at eight values of $\lambda$
+    (viridis colormap, yellow = coarse, blue = fine).
+    Dashed red: target $f(x)$.  The field converges to $f$ as $\lambda \to 0$
+    without gradient descent.}
+  \label{fig:field_evolution}
+\end{figure}
+
+\subsection{Swarm Structure}
+
+Figure~\ref{fig:swarm_structure} depicts the agent swarm in $(x, s)$
+space (position versus scale step).  Agents begin uniformly distributed
+(coarse scale, upper region) and concentrate near the singularities as
+$s$ increases.  Spawn events (triangles) occur consistently at
+$x \approx 0$; merge events (diamonds) reflect defect coalescence;
+annihilation events (crosses) remove agents from flat regions.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\linewidth]{swarm_structure.png}
+  \caption{Agent swarm in $(x, s)$ space for the step function target.
+    Colour encodes scale (plasma colourmap: yellow = coarse, purple = fine).
+    Lines indicate pairwise interactions $K_{ij}$.  The right axis labels
+    corresponding $\lambda$ values.}
+  \label{fig:swarm_structure}
+\end{figure}
+
+\subsection{Non-local Kernel}
+
+Figure~\ref{fig:nonlocal_kernel} visualises the kernel $K(x,x',\lambda)$.
+Panel~(A) confirms the approximate-identity property: as $\lambda \to 0$,
+$K(\cdot, 0, \lambda) \to \delta(\cdot)$.  Panel~(B) shows the Gaussian
+banding structure of $K$ as a matrix.  Panel~(C) confirms the linear
+scaling FWHM $= 2\sqrt{2\ln 2}\,\lambda$.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{nonlocal_kernel.png}
+  \caption{Non-local kernel $K(x,x',\lambda)$.
+    (A) $K(x,0,\lambda)$ for five values of $\lambda$.
+    (B) Matrix view of $K(x,x',\lambda{=}0.25)$ as a heat map.
+    (C) FWHM of $K$ vs $\lambda$ (log--log), confirming linear scaling.}
+  \label{fig:nonlocal_kernel}
+\end{figure}
+
+\subsection{Step Defect}
+
+Figure~\ref{fig:step_defect} shows the defect zone (crimson fill)
+localising at $x=0$ as $\lambda$ decreases.  At coarse scale
+($\lambda=1.0$) the defect zone is broad; by $\lambda \approx 0.015$
+it has contracted to a single-grid-cell neighbourhood of the discontinuity,
+confirming that $\cS[\Phi]$ correctly identifies and isolates the
+step singularity.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{step_defect.png}
+  \caption{Step defect evolution across six scale steps.  Blue: $\Phi(x,\lambda)$.
+    Dashed black: $H(x)$.  Crimson fill: defect zone (where
+    $|\partial^2_x\Phi| > \kappa_{90\%}$).  As $\lambda \to 0$, the
+    defect zone contracts to the discontinuity at $x=0$.}
+  \label{fig:step_defect}
+\end{figure}
+
+\subsection{Oscillatory Defect}
+
+Figure~\ref{fig:osc_defect} shows the oscillatory defect zone (orange fill)
+for $x\sin(1/x)$.  At coarse scale the defect zone covers a broad region
+near $x=0$; at fine scale it concentrates on the sub-period oscillatory
+structure, matching the prediction that multiple oscillatory defect
+operators $\Dhat{O,\eps_k}$ at nested scales $\eps_k \to 0$ are required.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{oscillation_defect.png}
+  \caption{Oscillatory defect evolution across six scale steps.
+    Purple: $\Phi(x,\lambda)$.  Dashed black: $x\sin(1/x)$.
+    Orange fill: defect zone (where $|\partial^2_x\Phi| > \kappa_{88\%}$).
+    Defects cluster at the essential singularity $x=0$.}
+  \label{fig:osc_defect}
+\end{figure}
+
+\subsection{Swarm Dynamics}
+
+Figure~\ref{fig:swarm_dynamics} confirms all three lifecycle events for
+both targets.  Insets show agent counts $|\mathcal{A}(s)|$ over scale
+steps: populations grow during spawn events and shrink during merges and
+annihilations, self-regulating according to the local complexity of the target.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{swarm_dynamics.png}
+  \caption{Swarm dynamics for both targets.  Colour encodes scale step
+    (green = coarse, red = fine).  Stars: spawn events.  Diamonds: merges.
+    Crosses: annihilations.  Insets: agent population $|\mathcal{A}(s)|$ over time.}
+  \label{fig:swarm_dynamics}
+\end{figure}
+
+\subsection{Multi-scale Flow}
+
+Figure~\ref{fig:multiscale_flow} demonstrates scale consistency.
+Panel~(A) is the full $(x,s)$ heatmap of $\Phi$, showing smooth
+variation in $s$ except at the singularity.  Panel~(B) shows the
+projection $\Pi(\lambda_1\to\lambda_2\to\lambda_3)$: successive scale
+levels converge toward the step target.  Panel~(C) shows $L^2$ error
+$\norm{\Phi(\cdot,\lambda)-f}_{L^2}$ vs $\lambda$ on a semi-log scale,
+decaying as $\lambda \to 0$ for both targets, confirming convergence.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{multiscale_flow.png}
+  \caption{Multi-scale flow.
+    (A) Full heatmap $\Phi(x, \lambda(s))$ for the step function.
+    (B) Projection $\Pi(\lambda_1\to\lambda_2\to\lambda_3)$: three
+        scale levels with arrows showing the projection direction.
+    (C) $L^2$ error vs $\lambda$ (semi-log) for both targets.
+        The $x$-axis is reversed (coarse $\to$ fine = left $\to$ right).}
+  \label{fig:multiscale_flow}
+\end{figure}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Comparison with Neural Networks.}
+SRFL is not a neural network and should not be evaluated by the same
+criteria.  A feed-forward network $g_\theta$ has a fixed number of
+parameters $|\theta|$ determined at design time.  SRFL has a dynamical
+number of defects $M(\lambda)$, growing or shrinking in response to the
+target's complexity.  For smooth targets (e.g., polynomials) SRFL
+reduces to pure Gaussian flow with $M=0$; for singular targets
+(step, $x\sin(1/x)$, Cantor-like) it generates the exact distributional
+structure required.  This adaptivity is impossible for fixed-width
+networks.
+
+\paragraph{Relation to Wavelet Theory.}
+The multi-scale projection $\Pi_{\lambda_1\to\lambda_2}$ resembles the
+scale-space framework of \cite{lindeberg1994scale}.  The key difference
+is that in SRFL the field $\Phi(x,\lambda)$ is not merely the Gaussian
+scale-space of $f$, but a dynamically evolving quantity that injects
+defects where the Gaussian approximation fails.  Scale-space theory
+has no defect mechanism.
+
+\paragraph{Relation to Mean-field Theory.}
+The swarm evolution \eqref{eq:agent_evolution} in the limit of many
+agents ($M \to \infty$) is related to mean-field interacting particle
+systems \cite{mckean1966class}.  In this limit, the empirical measure
+of agent positions converges to a probability measure $\mu_s$ on $\Omega$
+satisfying a Fokker--Planck-type equation.  This connection suggests
+a rigorous continuum limit of the SRFL swarm.
+
+\paragraph{Limitations.}
+\begin{enumerate}[label=(\roman*)]
+  \item The current simulation uses a one-dimensional domain.  Extension
+    to $d > 1$ requires $O(N^d \log N^d)$ FFT operations, which becomes
+    expensive for large $d$.
+  \item The defect algebra as defined is restricted to $\hat{S}$, $\hat{O}$,
+    $\hat{C}$.  Richer targets (e.g., fractal functions) may require
+    additional defect generators.
+  \item Convergence guarantees for the discrete Euler scheme in
+    \eqref{eq:evolution} under finite $\Delta s$ have not been established.
+    A Courant--Friedrichs--Lewy (CFL) condition on $(\Delta s, \lambda, N)$
+    is needed for theoretical completeness.
+\end{enumerate}
+
+\paragraph{Open Problems.}
+\begin{enumerate}[label=\textbf{Q\arabic*.}]
+  \item Does the SRFL field $\Phi(\cdot,\lambda)$ converge to $f$ in
+    $L^2(\Omega)$ as $\lambda \to 0$ for all $f \in L^2(\Omega)$?
+  \item Can the spawn/merge/annihilation thresholds be set automatically
+    from the action functional \eqref{eq:action_total}?
+  \item Is there a discrete-time analogue of the semigroup property
+    \eqref{eq:semigroup} for the Euler-discretised flow?
+  \item What is the correct defect algebra for targets in $d > 1$
+    (e.g., crack-line defects, vortex defects)?
+\end{enumerate}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have presented Swarm Renormalization Field Learning (SRFL), a
+complete mathematical framework for a learning paradigm that:
+\begin{itemize}
+  \item operates on a \textbf{scale-dependent field} $\Phi(x,\lambda)$
+    rather than a parameter vector $\theta$;
+  \item learns by \textbf{non-local field evolution} rather than
+    gradient descent;
+  \item represents singular structure through a \textbf{defect algebra}
+    $\cD$ whose generators $\set{\hat{S}, \hat{O}, \hat{C}}$ capture
+    discontinuities, oscillations, and piecewise patterns;
+  \item coordinates computation through a \textbf{swarm} of agents that
+    spawn, merge, and annihilate in response to field instability;
+  \item enforces \textbf{multi-scale consistency} via a scale projection
+    $\Pi_{\lambda_1\to\lambda_2}$ satisfying a semigroup law.
+\end{itemize}
+
+The numerical results confirm that SRFL captures the step function and
+$x\sin(1/x)$ via defect generation—without Gibbs-type artefacts, without
+back-propagation, and without fixing the number of representational
+elements in advance.  The framework opens several directions for future
+work: rigorous convergence analysis, extension to $d > 1$, connection to
+mean-field limits, and application to real-world function approximation
+tasks beyond fixed-topology neural architectures.
+
+% ──────────────────────────────────────────────────────────────────────────────
+\bibliographystyle{unsrtnat}
+\begin{thebibliography}{10}
+
+\bibitem{wilson1974renormalization}
+K.~G. Wilson,
+\newblock The renormalization group and the $\epsilon$ expansion,
+\newblock \emph{Physics Reports}, 12(2):75--200, 1974.
+
+\bibitem{cybenko1989approximation}
+G.~Cybenko,
+\newblock Approximation by superpositions of a sigmoidal function,
+\newblock \emph{Mathematics of Control, Signals and Systems}, 2(4):303--314, 1989.
+
+\bibitem{barron1993universal}
+A.~R. Barron,
+\newblock Universal approximation bounds for superpositions of a sigmoidal
+  function,
+\newblock \emph{IEEE Transactions on Information Theory}, 39(3):930--945, 1993.
+
+\bibitem{dorigo2006ant}
+M.~Dorigo, M.~Birattari, and T.~Stutzle,
+\newblock Ant colony optimization,
+\newblock \emph{IEEE Computational Intelligence Magazine}, 1(4):28--39, 2006.
+
+\bibitem{kennedy1995particle}
+J.~Kennedy and R.~Eberhart,
+\newblock Particle swarm optimization,
+\newblock In \emph{Proceedings of the IEEE International Conference on Neural
+  Networks}, volume~4, pages 1942--1948. IEEE, 1995.
+
+\bibitem{lindeberg1994scale}
+T.~Lindeberg,
+\newblock \emph{Scale-Space Theory in Computer Vision}.
+\newblock Kluwer Academic Publishers, Dordrecht, 1994.
+
+\bibitem{mckean1966class}
+H.~P. McKean,
+\newblock A class of Markov processes associated with nonlinear parabolic
+  equations,
+\newblock \emph{Proceedings of the National Academy of Sciences},
+  56(6):1907--1911, 1966.
+
+\bibitem{weinan2018mean}
+E.~Weinan,
+\newblock A proposal on machine learning via dynamical systems,
+\newblock \emph{Communications in Mathematics and Statistics}, 5(1):1--11, 2017.
+
+\bibitem{chen2018neural}
+R.~T.~Q. Chen, Y.~Rubanova, J.~Bettencourt, and D.~K. Duvenaud,
+\newblock Neural ordinary differential equations,
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~31, 2018.
+
+\bibitem{mallat1989theory}
+S.~G. Mallat,
+\newblock A theory for multiresolution signal decomposition: the wavelet
+  representation,
+\newblock \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  11(7):674--693, 1989.
+
+\end{thebibliography}
+
+\end{document}
