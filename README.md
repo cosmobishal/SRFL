@@ -87,7 +87,7 @@ srfl/
 
 ```bash
 # Clone
-git clone https://github.com/AstronomySquadKoshi/srfl.git
+git clone https://github.com/cosmobishal/srfl.git
 cd srfl
 
 # Install
