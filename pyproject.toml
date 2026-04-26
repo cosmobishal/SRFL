@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "srfl"
+version = "1.0.0"
+description = "Swarm Renormalization Field Learning — a non-local, multi-scale, defect-driven learning paradigm"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Bishal Neupane", email = "cosmobishal@gmail.com" }
+]
+keywords = ["machine-learning", "renormalization", "swarm", "field-theory", "non-local"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.23",
+    "matplotlib>=3.5",
+    "scipy>=1.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+notebook = [
+    "jupyter>=1.0",
+    "ipykernel>=6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/cosmobishal/SRFL"
+Repository = "https://github.com/cosmobishal/SRFL"
+Issues = "https://github.com/cosmobishal/SRFL/issues"
+
+[project.scripts]
+srfl-run = "srfl.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

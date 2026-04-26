@@ -1,6 +1,6 @@
 """
-run_all.py — SRFL Master Runner
-================================
+experiments/run_all.py — SRFL Master Runner
+=============================================
 Runs all experiments and generates all 7 publication-quality figures.
 
 Usage
@@ -17,10 +17,12 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+# Allow running from repo root or experiments/
+_repo_root = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_repo_root / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))   # so run_step/run_osc importable
 
 from srfl import (
     SRFLField, Swarm, ActionFunctional,
@@ -89,7 +91,7 @@ def main():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure generators
+# Figure generators (identical to original)
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _fig_field_evolution(x, lam_sched, fields_step, fields_osc,
@@ -280,7 +282,7 @@ def _fig_multiscale_flow(x, lam_sched, fields_step, fields_osc,
         ax.plot(x, fields_step[i_id], color=c, lw=2.4, label=lab)
     ax.plot(x, target_step, "k--", lw=1.5, alpha=0.6, label="$H(x)$")
     probe = 0.6
-    for (ia,ib,ca,cb) in [(ids[0],ids[1],cols[0],cols[1]),(ids[1],ids[2],cols[1],cols[2])]:
+    for (ia,ib) in [(ids[0],ids[1]),(ids[1],ids[2])]:
         ya = float(np.interp(probe, x, fields_step[ia]))
         yb = float(np.interp(probe, x, fields_step[ib]))
         ax.annotate("", xy=(probe,yb), xytext=(probe,ya),

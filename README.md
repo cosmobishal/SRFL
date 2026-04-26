@@ -1,8 +1,6 @@
 # Swarm Renormalization Field Learning (SRFL)
 
-<p align="center">
-  <img src="figures/field_evolution.png" width="800"/>
-</p>
+![Field Evolution](figures/field_evolution.png)
 
 > **A non-local, multi-scale, defect-driven learning paradigm — without gradient descent.**
 
@@ -15,12 +13,12 @@
 
 ## Overview
 
-**SRFL** replaces the parameter–gradient pair `(θ, ∇L)` of conventional learning with a **field–flow pair** `(Φ(x,λ), ∂Φ/∂s)` governed by an integro-differential equation that is:
+**SRFL** replaces the parameter-gradient pair `(θ, ∇L)` of conventional learning with a **field-flow pair** `(Φ(x,λ), ∂Φ/∂s)` governed by an integro-differential equation that is:
 
-- **Non-local** — governed by a Gaussian kernel `K(x, x′, λ)` integrating over all of `Ω`  
-- **Multi-scale** — `λ` flows from coarse (`λ → ∞`) to fine (`λ → 0`) via a scale semigroup  
-- **Defect-driven** — instabilities auto-generate defect operators (`Ŝ`, `Ô`, `Ĉ`) from a formal algebra  
-- **Swarm-coordinated** — agents spawn, merge, and annihilate in response to field curvature  
+- **Non-local** — governed by a Gaussian kernel `K(x, x′, λ)` integrating over all of `Ω`
+- **Multi-scale** — `λ` flows from coarse (`λ → ∞`) to fine (`λ → 0`) via a scale semigroup
+- **Defect-driven** — instabilities auto-generate defect operators (`Ŝ`, `Ô`, `Ĉ`) from a formal algebra
+- **Swarm-coordinated** — agents spawn, merge, and annihilate in response to field curvature
 - **No back-propagation** — learning is the stationary point of a 4-term action functional `𝒜`
 
 ---
@@ -38,7 +36,7 @@ The core evolution equation:
 | `Φ(x,λ)` | Scale-dependent learning field |
 | `K(x,x′,λ)` | Gaussian non-local kernel, FWHM = `2√(2ln2)·λ` |
 | `𝒢[Φ] = tanh(Φ)` | Nonlinear functional response |
-| `𝒮[Φ]` | Singularity generator — fires when `\|∂²Φ\| > κ` |
+| `𝒮[Φ]` | Singularity generator — fires when `|∂²Φ| > κ` |
 | `Dᵢ ∈ 𝒟` | Defect: step `Ŝ`, oscillatory `Ô`, conditional `Ĉ` |
 | `𝒜` | Action functional (data + scale + symmetry + complexity) |
 
@@ -47,36 +45,40 @@ The core evolution equation:
 ## Repository Structure
 
 ```
-srfl/
-├── src/srfl/                  # Core library
+SRFL/
+├── src/srfl/                   # Core library (installable package)
 │   ├── __init__.py
-│   ├── kernel.py              # Non-local Gaussian kernel
-│   ├── field.py               # Field evolution engine
-│   ├── defects.py             # Defect algebra (Ŝ, Ô, Ĉ)
-│   ├── swarm.py               # Agent swarm model
-│   ├── action.py              # Action functional 𝒜
-│   └── multiscale.py          # Scale projection Π(λ₁→λ₂)
+│   ├── kernel.py               # Non-local Gaussian kernel K(x, x', λ)
+│   ├── field.py                # Field evolution engine + SingularityGenerator
+│   ├── defects.py              # Defect algebra {Ŝ, Ô, Ĉ} + DefectAlgebra
+│   ├── swarm.py                # Agent swarm (spawn / merge / annihilate)
+│   ├── action.py               # Action functional 𝒜
+│   ├── multiscale.py           # Scale projection Π(λ₁ → λ₂)
+│   └── cli.py                  # Command-line interface (srfl-run)
 ├── experiments/
-│   ├── run_step.py            # Experiment A: step function H(x)
-│   ├── run_oscillatory.py     # Experiment B: x·sin(1/x)
-│   └── run_all.py             # Run all experiments + generate figures
+│   ├── run_step.py             # Experiment A: Heaviside step H(x)
+│   ├── run_oscillatory.py      # Experiment B: x·sin(1/x)
+│   └── run_all.py              # Run all experiments + generate all 7 figures
 ├── scripts/
-│   └── generate_figures.py   # Standalone figure generation
+│   └── generate_figures.py     # Standalone publication figure generator
 ├── tests/
 │   ├── test_kernel.py
+│   ├── test_field.py
 │   ├── test_defects.py
 │   ├── test_swarm.py
-│   └── test_action.py
+│   ├── test_action.py
+│   └── test_multiscale.py
 ├── paper/
-│   └── srfl_paper.tex         # Full LaTeX paper
-├── figures/                   # Generated PNG outputs
+│   └── srfl_paper.tex          # Full LaTeX paper
+├── figures/                    # Generated PNG outputs (7 publication figures)
 ├── notebooks/
-│   └── srfl_demo.ipynb        # Interactive walkthrough
+│   └── srfl_demo.ipynb         # Interactive walkthrough
 ├── .github/workflows/
-│   └── ci.yml                 # GitHub Actions CI
-├── requirements.txt
-├── setup.py
+│   └── ci.yml                  # GitHub Actions CI
 ├── pyproject.toml
+├── setup.py
+├── requirements.txt
+├── run_tests.py                # Standalone test runner (no pytest needed)
 ├── .gitignore
 └── LICENSE
 ```
@@ -87,18 +89,33 @@ srfl/
 
 ```bash
 # Clone
-git clone https://github.com/cosmobishal/srfl.git
-cd srfl
+git clone https://github.com/cosmobishal/SRFL.git
+cd SRFL
 
-# Install
+# Install (editable mode)
 pip install -e .
 
-# Run all experiments and generate all figures
+# Run all experiments and generate all 7 publication figures
 python experiments/run_all.py
 
 # Or run individual experiments
 python experiments/run_step.py
 python experiments/run_oscillatory.py
+
+# Standalone figure generation
+python scripts/generate_figures.py --outdir figures
+
+# CLI
+srfl-run --target step  --n 512 --steps 70 --outdir figures
+srfl-run --target osc   --n 512 --steps 70 --outdir figures
+srfl-run --target both  --outdir figures --verbose
+srfl-run --list-targets
+
+# Tests (no pytest needed)
+python run_tests.py
+
+# Or with pytest
+pytest tests/ -v
 ```
 
 ---
@@ -110,18 +127,15 @@ python experiments/run_oscillatory.py
 | `H(x)` — Heaviside step | Generates step defect `Ŝ_{x=0}`, no Gibbs oscillations | `O(1/ε)` neurons for ε-accuracy; Gibbs-type ringing |
 | `x·sin(1/x)` | Spawns nested oscillatory defects `Ô_ε` at `x=0` | Infinite frequency content → finite-arch. failure near origin |
 
-<p align="center">
-  <img src="figures/swarm_dynamics.png" width="750"/>
-</p>
-<p align="center">
-  <img src="figures/multiscale_flow.png" width="750"/>
-</p>
+![Swarm Dynamics](figures/swarm_dynamics.png)
+
+![Multi-scale Flow](figures/multiscale_flow.png)
 
 ---
 
 ## Paper
 
-The full theoretical paper is in [`paper/srfl_paper.tex`](paper/srfl_paper.tex).  
+The full theoretical paper is in [`paper/srfl_paper.tex`](paper/srfl_paper.tex).
 Compile with:
 
 ```bash
