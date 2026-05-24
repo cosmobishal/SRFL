@@ -16,9 +16,8 @@ SRFLField             : Full field evolution engine
 """
 
 import numpy as np
-from typing import Callable, List, Optional, Tuple
+from typing import List, Tuple
 
-from .kernel import SRFLKernel
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -24,10 +24,6 @@ _repo_root = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_repo_root / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))   # so run_step/run_osc importable
 
-from srfl import (
-    SRFLField, Swarm, ActionFunctional,
-    ScaleProjection, DefectAlgebra
-)
 from run_step        import run_step_experiment
 from run_oscillatory import run_oscillatory_experiment, make_osc_target
 

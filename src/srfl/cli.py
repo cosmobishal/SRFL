@@ -12,7 +12,6 @@ Usage
 """
 
 import argparse
-import sys
 import os
 import numpy as np
 import matplotlib
@@ -21,7 +20,6 @@ matplotlib.use("Agg")
 from .field      import SRFLField
 from .swarm      import Swarm
 from .action     import ActionFunctional
-from .multiscale import ScaleProjection
 from .defects    import DefectAlgebra
 
 
