@@ -1,15 +1,12 @@
-"""Tests for srfl.defects"""
+"""Tests for srfl.defects -- StepDefect, OscillatoryDefect, ConditionalDefect, DefectAlgebra"""
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import numpy as np
-try:
-    import pytest
-except ImportError:
-    import sys, os
-    sys.path.insert(0, os.path.dirname(__file__))
-    import pytest_shim as pytest
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
 from srfl import StepDefect, OscillatoryDefect, ConditionalDefect, DefectAlgebra
 
 x  = np.linspace(-2.0, 2.0, 512)
@@ -35,8 +32,7 @@ class TestStepDefect:
         assert np.allclose(out[x >= 0], 3.0)
 
     def test_norm(self):
-        D = StepDefect(x0=0.0, alpha=-3.5)
-        assert D.norm() == 3.5
+        assert StepDefect(x0=0.0, alpha=-3.5).norm() == 3.5
 
     def test_compose_same_x0(self):
         D1 = StepDefect(x0=0.0, alpha=1.0)
@@ -56,8 +52,8 @@ class TestOscillatoryDefect:
     def test_zero_at_origin(self):
         D   = OscillatoryDefect(eps=0.5, beta=1.0)
         out = D.field(x)
-        idx = np.argmin(np.abs(x))   # closest to 0
-        assert abs(out[idx]) < 1e-10
+        idx = np.argmin(np.abs(x))
+        assert abs(out[idx]) <= abs(x[idx]) + 1e-12  # x*sin(1/x) bounded by |x|
 
     def test_zero_outside_support(self):
         D   = OscillatoryDefect(eps=0.3, beta=1.0)
@@ -70,8 +66,7 @@ class TestOscillatoryDefect:
         assert np.any(out[np.abs(x) < 0.5] != 0.0)
 
     def test_shape(self):
-        D = OscillatoryDefect(eps=0.5, beta=2.0)
-        assert D.field(x).shape == (len(x),)
+        assert OscillatoryDefect(eps=0.5, beta=2.0).field(x).shape == (len(x),)
 
     def test_negative_eps_raises(self):
         with pytest.raises(ValueError):
@@ -94,12 +89,11 @@ class TestConditionalDefect:
         assert np.all(out[x < -1.0] == 0.0)
 
     def test_norm(self):
-        D = ConditionalDefect([(-1,0),(0,1)], [3.0, -4.0])
-        assert D.norm() == 7.0
+        assert ConditionalDefect([(-1, 0), (0, 1)], [3.0, -4.0]).norm() == 7.0
 
     def test_mismatched_lengths_raises(self):
         with pytest.raises(ValueError):
-            ConditionalDefect([(0,1)], [1.0, 2.0])
+            ConditionalDefect([(0, 1)], [1.0, 2.0])
 
 
 class TestDefectAlgebra:

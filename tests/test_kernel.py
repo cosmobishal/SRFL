@@ -1,17 +1,13 @@
-"""Tests for srfl.kernel"""
+"""Tests for srfl.kernel -- SRFLKernel"""
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import numpy as np
-try:
-    import pytest
-except ImportError:
-    import sys, os
-    sys.path.insert(0, os.path.dirname(__file__))
-    import pytest_shim as pytest
-from srfl import SRFLKernel
+import pytest
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from srfl import SRFLKernel
 
 N  = 256
 x  = np.linspace(-np.pi, np.pi, N)
@@ -41,7 +37,7 @@ class TestSRFLKernel:
     def test_convolve_smooths(self):
         """Convolution must reduce high-frequency power."""
         K   = SRFLKernel(x, lam=0.5)
-        phi = np.sin(50 * x)       # high-frequency input
+        phi = np.sin(50 * x)
         out = K.convolve(phi)
         assert np.std(out) < np.std(phi)
 
@@ -53,27 +49,27 @@ class TestSRFLKernel:
         assert np.allclose(out, phi, atol=1e-4)
 
     def test_approximate_identity(self):
-        """As λ→0, K*φ → φ in L²."""
+        """As lambda -> 0, K * phi -> phi in L2."""
         K   = SRFLKernel(x, lam=1e-3)
         phi = np.sin(2 * x)
         out = K.convolve(phi)
-        assert np.sqrt(np.mean((out - phi)**2)) < 0.01
+        assert np.sqrt(np.mean((out - phi) ** 2)) < 0.01
 
     def test_semigroup(self):
-        """K_λ * K_μ = K_{√(λ²+μ²)}."""
-        lam, mu  = 0.3, 0.4
+        """K_lam * K_mu = K_{sqrt(lam^2 + mu^2)}."""
+        lam, mu = 0.3, 0.4
         K1 = SRFLKernel(x, lam=lam)
         K2 = SRFLKernel(x, lam=mu)
-        K3 = SRFLKernel(x, lam=np.sqrt(lam**2 + mu**2))
-        phi = np.sin(x) + 0.5 * np.cos(3*x)
+        K3 = SRFLKernel(x, lam=np.sqrt(lam ** 2 + mu ** 2))
+        phi    = np.sin(x) + 0.5 * np.cos(3 * x)
         chain  = K2.convolve(K1.convolve(phi))
         direct = K3.convolve(phi)
-        assert np.sqrt(np.mean((chain - direct)**2)) < 1e-6
+        assert np.sqrt(np.mean((chain - direct) ** 2)) < 1e-6
 
     def test_fwhm(self):
-        """FWHM = 2√(2ln2)·λ."""
-        lam = 0.6
-        K   = SRFLKernel(x, lam=lam)
+        """FWHM = 2 * sqrt(2 * ln 2) * lambda."""
+        lam      = 0.6
+        K        = SRFLKernel(x, lam=lam)
         expected = 2.0 * np.sqrt(2.0 * np.log(2.0)) * lam
         assert abs(K.fwhm() - expected) < 1e-12
 
