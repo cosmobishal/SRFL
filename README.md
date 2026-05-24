@@ -152,7 +152,6 @@ cd paper && pdflatex srfl_paper.tex && pdflatex srfl_paper.tex
              A Non-local, Multi-scale, Defect-driven Learning Paradigm},
   author  = {Neupane, Bishal},
   year    = {2026},
-  note    = {Preprint, Astronomy Squad of Koshi},
   email   = {cosmobishal@gmail.com}
 }
 ```
@@ -161,7 +160,7 @@ cd paper && pdflatex srfl_paper.tex && pdflatex srfl_paper.tex
 
 ## Author
 
-**Bishal Neupane** · Astronomy Squad of Koshi · [cosmobishal@gmail.com](mailto:cosmobishal@gmail.com)
+**Bishal Neupane**  · [cosmobishal@gmail.com](mailto:cosmobishal@gmail.com)
 
 ---
 
