@@ -5,9 +5,6 @@ It treats the learned object as a field that moves through a sequence of spatial
 The smooth part is updated by a non local Gaussian operator and unresolved structure is represented with sparse defect atoms.
 A small swarm tracks where those structural corrections are needed.
 
-## What is new in this repository
-
-The original SRFL prototype used a fixed curvature trigger and a direct singularity injection term.
 This repository develops that idea into a reusable algorithm called adaptive defect projection.
 The solver has four coupled stages.
 
