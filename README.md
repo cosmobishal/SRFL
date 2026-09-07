@@ -22,14 +22,6 @@ alpha = <r, d> / <d, d>
 
 This makes the method usable as a deterministic numerical algorithm rather than as a training loop around adjustable model parameters.
 
-## Why the implementation is different from the prototype
-
-The public implementation does not assume periodic boundaries for a bounded signal.
-Reflective finite domain boundaries are the default and periodic wrapping is an explicit option.
-The scale schedule is validated and the numerical state is fully recorded.
-The defect dictionary is extensible through a registry.
-The swarm has deterministic lifecycle events and a serializable result object.
-The package exposes a small estimator style API that is easy to integrate into Python workflows.
 
 ## Install
 
