@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "srfl"
+version = "2.0.0"
+description = "Adaptive non-gradient field learning with scale flow, sparse defects, and swarm support tracking"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Bishal Neupane", email = "cosmobishal@gmail.com" }]
+keywords = ["scientific-computing", "non-gradient-learning", "scale-space", "field-methods", "swarm", "sparse-representation"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = ["numpy>=1.24", "scipy>=1.10"]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.7"]
+test = ["pytest>=8"]
+all = ["matplotlib>=3.7", "pytest>=8"]
+
+[project.scripts]
+srfl = "srfl.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"

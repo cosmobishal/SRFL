@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "Please cite SRFL when using the software or the associated research framework."
+title: "Swarm Renormalization Field Learning"
+type: software
+authors:
+  - family-names: Neupane
+    given-names: Bishal
+    email: cosmobishal@gmail.com
+    affiliation: Astronomy Squad of Koshi
+version: 2.0.0
+date-released: 2026-09-07
+license: MIT
+repository-code: https://github.com/AstronomySquadKoshi/srfl
+keywords:
+  - scientific-computing
+  - non-gradient-learning
+  - scale-space
+  - swarm
+  - sparse-representation
