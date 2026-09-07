@@ -118,15 +118,7 @@ pytest
 
 The release process also builds the wheel and runs a command line smoke test.
 
-## Research position
 
-This repository is research software.
-It should be read as a proposed learning framework rather than as a replacement for established machine learning systems.
-Claims about universal superiority, exact representation of arbitrary singular functions, or mathematical convergence should not be inferred from the included demonstrations.
-
-Targeted literature searches performed for this release did not locate a paper or public package using the exact SRFL name and the same combination of scale indexed non local field transport, adaptive defect projection, and swarm support tracking.
-That is a literature search observation, not proof of priority.
-A formal novelty or first publication claim requires a systematic bibliographic review and timestamped publication record.
 
 ## References
 
